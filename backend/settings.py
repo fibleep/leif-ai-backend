@@ -4,6 +4,10 @@ from tempfile import gettempdir
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from yarl import URL
+import os
+import dotenv
+
+dotenv.load_dotenv()
 
 TEMP_DIR = Path(gettempdir())
 
@@ -39,11 +43,11 @@ class Settings(BaseSettings):
 
     log_level: LogLevel = LogLevel.INFO
     # Variables for the database
-    db_host: str = "localhost"
+    db_host: str = "db.rcszqmoommksadwbzfdc.supabase.co"
     db_port: int = 5432
-    db_user: str = "backend"
-    db_pass: str = "backend"
-    db_base: str = "backend"
+    db_user: str = "postgres"
+    db_pass: str = os.environ["BACKEND_DB_PASSWORD"]
+    db_base: str = "postgres"
     db_echo: bool = False
 
     @property
