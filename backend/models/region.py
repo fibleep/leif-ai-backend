@@ -1,6 +1,8 @@
-from pydantic import BaseModel
-from .image_extraction_format import ImageExtractionFormat
 from typing import Tuple, Type
+
+from pydantic import BaseModel
+
+from .image_extraction_format import ImageExtractionFormat
 
 
 class Region(BaseModel):

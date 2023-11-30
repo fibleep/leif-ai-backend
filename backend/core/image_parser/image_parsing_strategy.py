@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from backend.models.image_extraction_format import ImageExtractionFormat
 
 

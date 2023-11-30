@@ -1,4 +1,5 @@
 from typing import List, Optional
+
 from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.db.dependencies import get_db_session
 from backend.db.models.explained_image_model import ExplainedImageModel
 from backend.models.explained_image import ExplainedImage
+
 
 class ExplainedImageDAO:
     """Class for accessing the explained_images table."""
@@ -46,7 +48,9 @@ class ExplainedImageDAO:
         self.session.add(explained_image)
 
     async def get_all_explained_images(
-        self, limit: int, offset: int
+        self,
+        limit: int,
+        offset: int,
     ) -> List[ExplainedImageModel]:
         """
         Get all explained image models with limit/offset pagination.
@@ -62,7 +66,9 @@ class ExplainedImageDAO:
         return list(raw_explained_images.scalars().fetchall())
 
     async def filter(
-        self, image: Optional[str] = None, comment: Optional[str] = None
+        self,
+        image: Optional[str] = None,
+        comment: Optional[str] = None,
     ) -> List[ExplainedImageModel]:
         """
         Get specific explained image model.

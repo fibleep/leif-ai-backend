@@ -1,10 +1,10 @@
-from .image_parsing_strategy import ImageParsingStrategy
+import os
+
 from langchain.chains import create_extraction_chain_pydantic
 from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage
-import os
 from openai import OpenAI
-from backend.models.image_extraction_format import DescriptionExtractionFormat
+
+from .image_parsing_strategy import ImageParsingStrategy
 
 
 class GPTParser(ImageParsingStrategy):
@@ -33,11 +33,14 @@ class GPTParser(ImageParsingStrategy):
 
         # Extract the text from the summary
         llm = ChatOpenAI(
-            api_key=os.environ["BACKEND_OPENAI_API_KEY"], temperature=0.7, model="gpt-4"
+            api_key=os.environ["BACKEND_OPENAI_API_KEY"],
+            temperature=0.7,
+            model="gpt-4",
         )
         # Create the extraction chain
         extraction_chain = create_extraction_chain_pydantic(
-            pydantic_schema=format, llm=llm
+            pydantic_schema=format,
+            llm=llm,
         )
         return extraction_chain.run(text_response)
 
@@ -64,7 +67,7 @@ class GPTParser(ImageParsingStrategy):
                             "image_url": {"url": "data:image/png;base64," + image},
                         },
                     ],
-                }
+                },
             ],
             max_tokens=300,
         )

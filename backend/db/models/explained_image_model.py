@@ -1,13 +1,7 @@
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.engine import make_url
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Integer, String
 from sqlalchemy.orm import mapped_column
 
-from backend.settings import settings
-from sqlalchemy.orm import Mapped, mapped_column
 from backend.db.base import Base
 
 

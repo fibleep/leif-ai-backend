@@ -1,10 +1,11 @@
-from pydantic import BaseModel
-from .image_extraction_format import ImageExtractionFormat, DescriptionExtractionFormat, DirectionExtractionFormat
 from typing import List
+
+from pydantic import BaseModel
 
 
 class ExplainedImage(BaseModel):
     """ExplainedImage model"""
+
     image: str
     comment: str
     date: str
@@ -18,4 +19,3 @@ class ExplainedImage(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-

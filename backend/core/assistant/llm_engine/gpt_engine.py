@@ -1,10 +1,12 @@
-from .llm_engine import LLMEngine
 import os
+
+from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
-from dotenv import load_dotenv
 
-load_dotenv() 
+from .llm_engine import LLMEngine
+
+load_dotenv()
 
 
 class GPTEngine(LLMEngine):

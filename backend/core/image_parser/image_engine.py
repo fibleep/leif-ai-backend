@@ -1,9 +1,12 @@
-from .image_parsing_strategy import ImageParsingStrategy
-import cv2
 from base64 import b64encode
-from backend.models.region import Region
-import numpy as np
 from typing import List
+
+import cv2
+import numpy as np
+
+from backend.models.region import Region
+
+from .image_parsing_strategy import ImageParsingStrategy
 
 
 class ImageEngine:
@@ -12,7 +15,9 @@ class ImageEngine:
     """
 
     def __init__(
-        self, parsing_strategy: ImageParsingStrategy, default_regions: List[Region]
+        self,
+        parsing_strategy: ImageParsingStrategy,
+        default_regions: List[Region],
     ) -> None:
         self._parsing_strategy = parsing_strategy
         self.default_regions = default_regions

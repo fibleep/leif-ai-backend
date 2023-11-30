@@ -1,23 +1,21 @@
-from fastapi import APIRouter
+import io
+
+import numpy as np
+from fastapi import APIRouter, File, UploadFile
+from fastapi.param_functions import Depends
+from PIL import Image
 
 from backend.core.assistant.llm_engine.gpt_engine import GPTEngine
 from backend.core.image_parser.gpt4_vision_parser import GPTParser
 from backend.core.image_parser.image_engine import ImageEngine
 from backend.core.indexer.index_engine import IndexEngine
+from backend.db.dao.explained_image_dao import ExplainedImageDAO
 from backend.models.explained_image import ExplainedImage
 from backend.models.image_extraction_format import (
     DescriptionExtractionFormat,
     DirectionExtractionFormat,
 )
-from fastapi import File, UploadFile
-import shutil
 from backend.models.region import Region
-import io
-import numpy as np
-from PIL import Image
-import logging
-from fastapi.param_functions import Depends
-from backend.db.dao.explained_image_dao import ExplainedImageDAO
 
 router = APIRouter()
 
@@ -53,7 +51,8 @@ async def submit_image(
         region=bottom_left_region,
     )
     region_direction = Region(
-        extraction_format=DirectionExtractionFormat, region=bottom_right_region
+        extraction_format=DirectionExtractionFormat,
+        region=bottom_right_region,
     )
 
     # Create engines
@@ -63,20 +62,23 @@ async def submit_image(
     index_engine = IndexEngine()
 
     split_images = image_engine.split_into_regions(
-        image
+        image,
     )  # Retrieve the regions DIRECTION and DESCRIPTION
 
     description: DescriptionExtractionFormat = image_engine.parse(
-        split_images[0][1], split_images[0][0]
+        split_images[0][1],
+        split_images[0][0],
     )  # Parse the image and extract the description
     direction: DirectionExtractionFormat = image_engine.parse(
-        split_images[1][1], split_images[1][0]
+        split_images[1][1],
+        split_images[1][0],
     )
     ai_comment = image_engine.parse(
-        image, None
+        image,
+        None,
     )  # Generate a general comment about the image
     ai_comment_vector = llm_engine.create_embeddings(
-        ai_comment
+        ai_comment,
     )  # Create a vector for the general comment
     # Create the explained image
     encoded_image = image_engine.encode_image_to_base64(image)

@@ -1,11 +1,11 @@
 import enum
+import os
 from pathlib import Path
 from tempfile import gettempdir
 
+import dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from yarl import URL
-import os
-import dotenv
 
 dotenv.load_dotenv()
 
