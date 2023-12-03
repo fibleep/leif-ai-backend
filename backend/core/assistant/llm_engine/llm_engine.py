@@ -7,7 +7,7 @@ class LLMEngine(ABC):
     """
 
     @abstractmethod
-    def generate(self, prompt, history=None):
+    def generate(self, prompt, rag_results):
         pass
 
     @abstractmethod

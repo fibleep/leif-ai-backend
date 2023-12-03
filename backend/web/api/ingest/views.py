@@ -4,6 +4,7 @@ import numpy as np
 from fastapi import APIRouter, File, UploadFile
 from fastapi.param_functions import Depends
 from PIL import Image
+import logging
 
 from backend.core.assistant.llm_engine.gpt_engine import GPTEngine
 from backend.core.image_parser.gpt4_vision_parser import GPTParser
@@ -95,6 +96,10 @@ async def submit_image(
         ai_comment=ai_comment,
         ai_comment_vector=ai_comment_vector,
     )
+
+    logging.info("Saving explained image to database")
+    logging.info(f"DIRECTION: {direction[0].direction}")
+    logging.info(f"DESCRIPTION: {description[0].comment}")
 
     await explained_image_dao.create_explained_image(explained_image)
 

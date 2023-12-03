@@ -49,8 +49,6 @@ class ExplainedImageDAO:
 
     async def get_all_explained_images(
         self,
-        limit: int,
-        offset: int,
     ) -> List[ExplainedImageModel]:
         """
         Get all explained image models with limit/offset pagination.
@@ -60,7 +58,7 @@ class ExplainedImageDAO:
         :return: stream of explained images.
         """
         raw_explained_images = await self.session.execute(
-            select(ExplainedImageModel).limit(limit).offset(offset),
+            select(ExplainedImageModel)
         )
 
         return list(raw_explained_images.scalars().fetchall())
@@ -84,3 +82,23 @@ class ExplainedImageDAO:
             query = query.where(ExplainedImageModel.comment == comment)
         rows = await self.session.execute(query)
         return list(rows.scalars().fetchall())
+
+    async def similarity_search(
+        self,
+        vector: List[float],
+        limit: int = 2,
+    ) -> List[ExplainedImageModel]:
+        """
+        Get similar explained image models.
+
+        :param vector: Vector representation of the image.
+        :param limit: limit of explained images.
+        :return: explained image models.
+        """
+        result = await self.session.scalars(
+            select(ExplainedImageModel).order_by(
+                ExplainedImageModel.ai_comment_vector.l2_distance(vector)
+            ),
+        )
+        return result.fetchmany(limit)
+

@@ -24,7 +24,7 @@ class GPTParser(ImageParsingStrategy):
         """
 
         if format is None:
-            prompt = "Interpret what you can see in this image:"
+            prompt = "Interpret what you can see in this image, do not mention anything about the words you see in bottom left and bottom right:"
             return self.call_vision_api(image, prompt)
 
         prompt = "Extract the text from this image:"
