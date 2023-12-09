@@ -67,7 +67,7 @@ Only talk about the distance. Determine from the context which location is the o
 Always mention how far away it is from the user, give a visual explanation of what it looks like. DON'T MENTION THE ADDRESS
 
 ====================
-{parsed_context}
+{parsed_context}m
 
 QUERY TO ANSWER:
 {current_message.content}

@@ -1,12 +1,13 @@
 import io
+import logging
 
 import numpy as np
 from fastapi import APIRouter, File, UploadFile
 from fastapi.param_functions import Depends
 from PIL import Image
-import logging
 
 from backend.core.assistant.llm_engine.gpt_engine import GPTEngine
+from backend.core.image_parser.filename_parser import FilenameParser
 from backend.core.image_parser.gpt4_vision_parser import GPTParser
 from backend.core.image_parser.image_engine import ImageEngine
 from backend.core.indexer.index_engine import IndexEngine
@@ -24,6 +25,8 @@ router = APIRouter()
 @router.post("/", response_model=ExplainedImage)
 async def submit_image(
     file: UploadFile = File(...),
+    organization_id: str = None,
+    info_in_file_name: bool = False,
     explained_image_dao: ExplainedImageDAO = Depends(),
 ) -> ExplainedImage:
     """
@@ -57,23 +60,35 @@ async def submit_image(
     )
 
     # Create engines
-    parsing_strategy = GPTParser()
+    if info_in_file_name:
+        parsing_strategy = FilenameParser(filename=file.filename)
+    else:
+        parsing_strategy = GPTParser()
     image_engine = ImageEngine(parsing_strategy, [region_description, region_direction])
     llm_engine = GPTEngine(model_name="gpt-4")
     index_engine = IndexEngine()
 
-    split_images = image_engine.split_into_regions(
-        image,
-    )  # Retrieve the regions DIRECTION and DESCRIPTION
+    if not info_in_file_name:
+        split_images = image_engine.split_into_regions(
+            image,
+        )  # Retrieve the regions DIRECTION and DESCRIPTION
 
-    description: DescriptionExtractionFormat = image_engine.parse(
-        split_images[0][1],
-        split_images[0][0],
-    )  # Parse the image and extract the description
-    direction: DirectionExtractionFormat = image_engine.parse(
-        split_images[1][1],
-        split_images[1][0],
-    )
+        description: DescriptionExtractionFormat = image_engine.parse(
+            split_images[0][1],
+            split_images[0][0],
+        )  # Parse the image and extract the description
+        direction: DirectionExtractionFormat = image_engine.parse(
+            split_images[1][1],
+            split_images[1][0],
+        )
+    else:
+        description: DescriptionExtractionFormat = image_engine.parse(
+            image, DescriptionExtractionFormat
+        )
+        direction: DirectionExtractionFormat = image_engine.parse(
+            image, DirectionExtractionFormat
+        )
+
     ai_comment = image_engine.parse(
         image,
         None,
@@ -101,6 +116,6 @@ async def submit_image(
     logging.info(f"DIRECTION: {direction[0].direction}")
     logging.info(f"DESCRIPTION: {description[0].comment}")
 
-    await explained_image_dao.create_explained_image(explained_image)
+    await explained_image_dao.create_explained_image(explained_image, organization_id)
 
     return explained_image

@@ -18,5 +18,5 @@ async def chat(
     """
     llm_engine = GPTEngine("gpt-4", explained_image_dao)
     generation = await llm_engine.generate(conversation.messages)
-
+    
     return generation
