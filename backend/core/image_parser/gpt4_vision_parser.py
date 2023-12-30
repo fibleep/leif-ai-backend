@@ -42,6 +42,7 @@ class GPTParser(ImageParsingStrategy):
             pydantic_schema=format,
             llm=llm,
         )
+
         return extraction_chain.run(text_response)
 
     def call_vision_api(self, image, prompt):

@@ -1,11 +1,9 @@
 from fastapi.routing import APIRouter
 
-from backend.web.api import dummy, echo, ingest, monitoring, chat
+from backend.web.api import images, monitoring, chat, security
 
 api_router = APIRouter()
 api_router.include_router(monitoring.router)
-api_router.include_router(echo.router, prefix="/echo", tags=["echo"])
-api_router.include_router(dummy.router, prefix="/dummy", tags=["dummy"])
-api_router.include_router(ingest.router, prefix="/ingest", tags=["ingest"])
+api_router.include_router(security.router, prefix="/auth", tags=["auth"])
+api_router.include_router(images.router, prefix="/images", tags=["images"])
 api_router.include_router(chat.router, prefix="/bot", tags=["bot"])
-

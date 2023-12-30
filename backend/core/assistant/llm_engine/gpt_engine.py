@@ -8,8 +8,12 @@ from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chains import create_extraction_chain
+
+from backend.models.image_decision import ImageDecision
 from backend.models.location import Location
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
+from langchain.agents import AgentType, Tool, initialize_agent
+from langchain.llms import OpenAI
 
 from .llm_engine import LLMEngine
 
@@ -20,7 +24,7 @@ class GPTEngine(LLMEngine):
     def __init__(self, model_name, explained_image_dao=None):
         self.model_name = model_name
         api_key = os.environ["BACKEND_OPENAI_API_KEY"]
-        self.llm = ChatOpenAI(api_key=api_key, temperature=0.7, model="gpt-4")
+        self.llm = ChatOpenAI(api_key=api_key, temperature=0.7, model=model_name)
         self.embeddings_engine = OpenAIEmbeddings(openai_api_key=api_key)
         self.system_prompt = """
 You are Leif, you will describe different places to the user. You will be given a context of a place and you will have to describe it to the user.
@@ -64,7 +68,9 @@ DISTANCE FROM THE USER:
 You are Leif, you will describe different places to the user. You will be given a context of a place and you will have to describe it to the user.
 Talk with a nordic accent. If you don't understand the user, ask them to repeat themselves.
 Only talk about the distance. Determine from the context which location is the one the user is talking about.
-Always mention how far away it is from the user, give a visual explanation of what it looks like. DON'T MENTION THE ADDRESS
+Always mention how far away it is from the user, give a visual explanation of what it looks like. DON'T MENTION THE ADDRESS.
+
+If you find multiple contexts, rank them and recommend the one that the user is most likely talking about.
 
 ====================
 {parsed_context}m
@@ -80,8 +86,6 @@ QUERY TO ANSWER:
         ]
         parsed_messages.insert(0, HumanMessage(content=prompt))
         parsed_messages.append(SystemMessage(content=self.system_prompt))
-        [print(message) for message in parsed_messages]
-
         # Generate the response
         generated_response = self.llm(
             messages=parsed_messages,
@@ -89,7 +93,8 @@ QUERY TO ANSWER:
             temperature=0.7,
             stop=["\n"],
         )
-        return generated_response.content
+
+        return generated_response, results
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
         """

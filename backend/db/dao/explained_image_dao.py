@@ -86,7 +86,7 @@ class ExplainedImageDAO:
     async def similarity_search(
         self,
         vector: List[float],
-        limit: int = 2,
+        limit: int = 1,
     ) -> List[ExplainedImageModel]:
         """
         Get similar explained image models.
@@ -101,4 +101,3 @@ class ExplainedImageDAO:
             ),
         )
         return result.fetchmany(limit)
-

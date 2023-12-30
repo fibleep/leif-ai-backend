@@ -119,3 +119,9 @@ async def submit_image(
     await explained_image_dao.create_explained_image(explained_image, organization_id)
 
     return explained_image
+
+
+@router.get("/")
+async def get_all(explained_image_dao: ExplainedImageDAO = Depends(), ):
+    images = await explained_image_dao.get_all_explained_images()
+    return images
