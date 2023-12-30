@@ -6,7 +6,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
-jupyter_notebooks/
+jupyter_notebooks/*
+jupyter_notebooks
 .env
 
 # C extensions

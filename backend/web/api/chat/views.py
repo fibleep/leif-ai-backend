@@ -25,5 +25,4 @@ async def chat(
         generation[0],
         results
     )
-    print(bot_response)
-    return generation
+    return bot_response
