@@ -4,11 +4,11 @@ from pydantic import BaseModel
 class ExplainedImageDTO(BaseModel):
     """ExplainedImage model"""
 
-    comment: str
+    title: str
     date: str
-    latitude: str
-    longitude: str
-    altitude: str
+    latitude: float
+    longitude: float
+    altitude: int
     location: str
     direction: str
-    ai_comment: str
+    additional_comment: str

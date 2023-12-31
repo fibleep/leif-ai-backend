@@ -9,11 +9,11 @@ class ExplainedImage(BaseModel):
     """ExplainedImage model"""
     id: int
     image: str
-    comment: str
+    title: str
     date: str
-    latitude: str
-    longitude: str
-    altitude: str
+    latitude: float
+    longitude: float
+    altitude: int
     location: str
     direction: str
     additional_comment: str
@@ -22,14 +22,16 @@ class ExplainedImage(BaseModel):
         super().__init__(
             id=image.id,
             image=image.image,
-            comment=image.comment,
+            title=image.title,
             date=image.date,
             latitude=image.latitude,
             longitude=image.longitude,
             altitude=image.altitude,
             location=image.location,
             direction=image.direction,
-            additional_comment=image.ai_comment,
+            additional_comment=image.additional_comment,
         )
+
+
     class Config:
         arbitrary_types_allowed = True

@@ -129,14 +129,14 @@ QUERY TO ANSWER:
         results = await self.explained_image_dao.similarity_search(vectorized_message)
         result_images = [
             ExplainedImageDTO(
-                comment=result.comment,
+                title=result.title,
                 date=result.date,
                 latitude=result.latitude,
                 longitude=result.longitude,
                 altitude=result.altitude,
                 location=result.location,
                 direction=result.direction,
-                ai_comment=result.ai_comment,
+                additional_comment=result.additional_comment,
             )
             for result in results
         ]

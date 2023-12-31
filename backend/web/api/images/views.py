@@ -21,6 +21,7 @@ from backend.models.image_extraction_format import (
 )
 from backend.models.region import Region
 from backend.web.api.chat.dtos.explained_image_dto import ExplainedImageDTO
+from backend.web.api.images.dtos.explained_image_dto import UpdateExplainedImageDTO
 
 router = APIRouter()
 
@@ -101,10 +102,8 @@ async def submit_image(
     )  # Create a vector for the general comment
     # Create the explained image
     encoded_image = image_engine.encode_image_to_base64(image)
-    logging.info("Saving explained image to database")
-    logging.info(f"DIRECTION: {direction[0].direction}")
-    logging.info(f"DESCRIPTION: {description[0].comment}")
-
+    print(description)
+    print(direction)
     await explained_image_dao.create_explained_image(
         encoded_image,
         description[0].comment,
@@ -128,8 +127,23 @@ async def get_all(explained_image_dao: ExplainedImageDAO = Depends(), ):
     images = [ExplainedImage(image) for image in images]
     return images
 
+
 @router.get("/{id}")
 async def get_by_id(id: int, explained_image_dao: ExplainedImageDAO = Depends(), ):
     image = await explained_image_dao.get_explained_image_by_id(id)
     image = ExplainedImage(image)
     return image
+
+
+@router.delete("/{id}")
+async def delete_by_id(id: int, explained_image_dao: ExplainedImageDAO = Depends(), ):
+    await explained_image_dao.delete_explained_image_by_id(id)
+    return Response(status_code=200)
+
+
+@router.put("/{id}")
+async def update_by_id(image: ExplainedImage,
+                       explained_image_dao: ExplainedImageDAO = Depends()):
+    print("Updating image")
+    await explained_image_dao.update_explained_image_by_id(image)
+    return Response(status_code=200)

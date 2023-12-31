@@ -22,9 +22,9 @@ class ImageExtractionFormat(BaseModel):
 class DescriptionExtractionFormat(ImageExtractionFormat):
     comment: str = Field(..., alias="comment on the image")
     date: str = Field(..., alias="date the image was taken")
-    latitude: str = Field(..., alias="latitude of the image")
-    longitude: str = Field(..., alias="longitude of the image")
-    altitude: str = Field(..., alias="altitude of the image")
+    latitude: float = Field(..., alias="latitude of the image")
+    longitude: float = Field(..., alias="longitude of the image")
+    altitude: int = Field(..., alias="altitude of the image")
     location: str = Field(..., alias="location of the image")
 
     class Config:
