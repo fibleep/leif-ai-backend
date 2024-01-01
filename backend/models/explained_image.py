@@ -15,7 +15,7 @@ class ExplainedImage(BaseModel):
     longitude: float
     altitude: int
     location: str
-    direction: str
+    direction: str | None
     additional_comment: str
 
     def __init__(self, image):
@@ -28,7 +28,7 @@ class ExplainedImage(BaseModel):
             longitude=image.longitude,
             altitude=image.altitude,
             location=image.location,
-            direction=image.direction,
+            direction=image.direction if image.direction else None,
             additional_comment=image.additional_comment,
         )
 

@@ -5,7 +5,7 @@ import numpy as np
 from fastapi import APIRouter, File, UploadFile
 from fastapi.param_functions import Depends
 from PIL import Image
-from h11 import Response
+from starlette.responses import Response
 
 from backend.core.assistant.llm_engine.gpt_engine import GPTEngine
 from backend.core.image_parser.filename_parser import FilenameParser
@@ -36,6 +36,8 @@ async def submit_image(
     """
     Receive an image and process it.
     """
+
+    print("Processing image")
     contents = await file.read()
     image = Image.open(io.BytesIO(contents))
     image = np.array(image)
@@ -72,6 +74,8 @@ async def submit_image(
     llm_engine = GPTEngine(model_name="gpt-4")
     index_engine = IndexEngine()
 
+
+
     if not info_in_file_name:
         split_images = image_engine.split_into_regions(
             image,
@@ -93,6 +97,8 @@ async def submit_image(
             image, DirectionExtractionFormat
         )
 
+    print(description)
+    print(direction)
     ai_comment = image_engine.parse(
         image,
         None,
@@ -102,8 +108,6 @@ async def submit_image(
     )  # Create a vector for the general comment
     # Create the explained image
     encoded_image = image_engine.encode_image_to_base64(image)
-    print(description)
-    print(direction)
     await explained_image_dao.create_explained_image(
         encoded_image,
         description[0].comment,
@@ -112,7 +116,7 @@ async def submit_image(
         description[0].longitude,
         description[0].altitude,
         description[0].location,
-        direction[0].direction,
+        direction[0].direction if direction else None,
         ai_comment,
         ai_comment_vector,
         organization_id,
@@ -142,8 +146,8 @@ async def delete_by_id(id: int, explained_image_dao: ExplainedImageDAO = Depends
 
 
 @router.put("/{id}")
-async def update_by_id(image: ExplainedImage,
+async def update_by_id(image: UpdateExplainedImageDTO,
                        explained_image_dao: ExplainedImageDAO = Depends()):
     print("Updating image")
     await explained_image_dao.update_explained_image_by_id(image)
-    return Response(status_code=200)
+    return Response()

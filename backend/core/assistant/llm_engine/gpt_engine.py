@@ -56,8 +56,8 @@ Always mention how far away it is from the user. DON'T MENTION THE ADDRESS
             parsed_context.append(
                 f"""
 LOCATION:
-{result.comment}
-{result.ai_comment}
+{result.title}
+{result.additional_comment}
 DISTANCE FROM THE USER:
 {distance:.2f} meters
 ====================
@@ -65,10 +65,12 @@ DISTANCE FROM THE USER:
             )
 
         prompt = f"""
-You are Leif, you will describe different places to the user. You will be given a context of a place and you will have to describe it to the user.
-Talk with a nordic accent. If you don't understand the user, ask them to repeat themselves.
+You are Echo, you will describe different places to the user. You will be given a
+context of a place and you will have to describe it to the user. Talk in a friendly,
+encouraging tone. If you don't understand the user, ask them to repeat themselves.
 Only talk about the distance. Determine from the context which location is the one the user is talking about.
-Always mention how far away it is from the user, give a visual explanation of what it looks like. DON'T MENTION THE ADDRESS.
+Always mention how far away it is from the user, give a visual explanation of what it looks like.
+DON'T MENTION THE ADDRESS.
 
 If you find multiple contexts, rank them and recommend the one that the user is most likely talking about.
 

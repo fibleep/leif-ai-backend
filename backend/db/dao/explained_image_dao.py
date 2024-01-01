@@ -9,6 +9,7 @@ from backend.core.assistant.llm_engine.gpt_engine import GPTEngine
 from backend.db.dependencies import get_db_session
 from backend.db.models.explained_image_model import ExplainedImageModel
 from backend.models.explained_image import ExplainedImage
+from backend.web.api.images.dtos.explained_image_dto import UpdateExplainedImageDTO
 
 
 class ExplainedImageDAO:
@@ -26,7 +27,7 @@ class ExplainedImageDAO:
         longitude: float,
         altitude: int,
         location: str,
-        direction: str,
+        direction: str | None,
         additional_comment: str,
         additional_comment_vector: List[float],
         organization_id: int,
@@ -104,7 +105,7 @@ class ExplainedImageDAO:
         row = await self.session.execute(query)
         return Response()
 
-    async def update_explained_image_by_id(self, image: ExplainedImage):
+    async def update_explained_image_by_id(self, image: UpdateExplainedImageDTO):
         """
         Update specific explained image model.
         :param id: ID of the image.
@@ -132,7 +133,6 @@ class ExplainedImageDAO:
             additional_comment_vector=vector,
         )
         row = await self.session.execute(query)
-        return Response()
 
     async def filter(
         self,
