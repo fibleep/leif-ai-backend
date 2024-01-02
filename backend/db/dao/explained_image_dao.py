@@ -1,6 +1,9 @@
+import io
+import os
+import time
 from typing import List, Optional
 
-
+import numpy as np
 from fastapi import Depends
 from sqlalchemy import select, delete, update, UUID
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +14,10 @@ from backend.db.dependencies import get_db_session
 from backend.db.models.echo_model import EchoModel
 from backend.db.models.explained_image_model import ExplainedImageModel
 from backend.models.explained_image import ExplainedImage
+from backend.services.supabase import Supabase
 from backend.web.api.images.dtos.explained_image_dto import UpdateExplainedImageDTO
+from supabase import create_client, Client
+from PIL import Image
 
 
 class ExplainedImageDAO:
@@ -19,10 +25,11 @@ class ExplainedImageDAO:
 
     def __init__(self, session: AsyncSession = Depends(get_db_session)):
         self.session = session
+        self.supabase = Supabase()
 
     async def create_explained_image(
         self,
-        image: str,
+        image: np.ndarray,
         title: str,
         date: str,
         latitude: float,
@@ -50,8 +57,12 @@ class ExplainedImageDAO:
         :param additional_comment_vector: Optional vector representation of the AI comment.
         :param echo: Echo model.
         """
+        path_on_supastorage = f"{title}{echo.id}{int(time.time())}.png"
+        image = Image.fromarray(np.array(image))
+        url = self.supabase.upload_image(image, path_on_supastorage)
+
         explained_image = ExplainedImageModel(
-            image="https://i.redd.it/ojna3hgcsfa51.jpg",
+            image=url,
             title=title,
             date=date,
             latitude=latitude,
@@ -179,12 +190,13 @@ class ExplainedImageDAO:
     async def similarity_search(
         self,
         vector: List[float],
-        limit: int = 1,
+        limit: int = 3,
         echo_id: UUID = None,
     ) -> List[ExplainedImageModel]:
         """
         Get similar explained image models.
 
+        :param echo_id: id of the echo.
         :param vector: Vector representation of the image.
         :param limit: limit of explained images.
         :return: explained image models.

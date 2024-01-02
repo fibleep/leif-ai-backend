@@ -116,9 +116,8 @@ class ImageService:
             ai_comment,
         )  # Create a vector for the general comment
         # Create the explained image
-        encoded_image = image_engine.encode_image_to_base64(image)
         await explained_image_dao.create_explained_image(
-            encoded_image,
+            image,
             description[0].comment,
             description[0].date,
             description[0].latitude,
