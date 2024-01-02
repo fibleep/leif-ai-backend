@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
 
@@ -9,17 +11,17 @@ from backend.web.api.chat.schema import Conversation
 router = APIRouter()
 
 
-@router.post("/")
+@router.post("/{echo_id}", tags=["bot"])
 async def chat(
     conversation: Conversation,
-    echo_id: str = None,
+    echo_id: UUID,
     explained_image_dao: ExplainedImageDAO = Depends(),
 ):
     """
     Chat with your location.
     """
     llm_engine = GPTEngine("gpt-3.5-turbo", explained_image_dao)
-    generation = await llm_engine.generate(conversation.messages)
+    generation = await llm_engine.generate(conversation.messages, echo_id)
     results = generation[1]
     bot_response = BotResponse(
         generation[0],

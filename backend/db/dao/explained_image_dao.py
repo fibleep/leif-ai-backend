@@ -180,6 +180,7 @@ class ExplainedImageDAO:
         self,
         vector: List[float],
         limit: int = 1,
+        echo_id: UUID = None,
     ) -> List[ExplainedImageModel]:
         """
         Get similar explained image models.
@@ -189,7 +190,9 @@ class ExplainedImageDAO:
         :return: explained image models.
         """
         result = await self.session.scalars(
-            select(ExplainedImageModel).order_by(
+            select(ExplainedImageModel)
+            .where(ExplainedImageModel.echo_id == echo_id)
+            .order_by(
                 ExplainedImageModel.additional_comment_vector.l2_distance(vector)
             ),
         )

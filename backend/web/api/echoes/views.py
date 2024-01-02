@@ -1,10 +1,8 @@
-
 from uuid import UUID
 
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
 from starlette.responses import Response
-
 
 from backend.db.dao.echo_dao import EchoDAO
 from backend.web.api.echoes.dtos.echo_dto import EchoDTO
@@ -33,6 +31,18 @@ async def get_all_echoes(
     """
     echoes = await echo_dao.get_all()
     return echoes
+
+
+@router.get("/{echo_id}")
+async def get_echo(
+    echo_id: UUID,
+    echo_dao: EchoDAO = Depends(),
+):
+    """
+    Get a single echo
+    """
+    echo = await echo_dao.get(echo_id)
+    return echo
 
 
 @router.delete("/{echo_id}")

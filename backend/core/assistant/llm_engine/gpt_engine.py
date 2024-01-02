@@ -8,6 +8,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chains import create_extraction_chain
+from sqlalchemy import UUID
 
 from backend.models.image_decision import ImageDecision
 from backend.models.location import Location
@@ -34,7 +35,9 @@ Always mention how far away it is from the user. DON'T MENTION THE ADDRESS
 """
         self.explained_image_dao = explained_image_dao
 
-    async def generate(self, messages):
+    async def generate(self, messages, echo_id: UUID = None):
+
+
         current_message = messages[-1]
         logging.info(f"Generating response for message: {current_message}")
 
@@ -44,7 +47,7 @@ Always mention how far away it is from the user. DON'T MENTION THE ADDRESS
         combined_user_messages = " ".join(msg.content for msg in user_messages)
 
         # Send the combined messages to the similarity search function
-        results = await self.get_most_relevant_context(combined_user_messages)
+        results = await self.get_most_relevant_context(combined_user_messages, echo_id)
         results_and_distances = []
         for result in results:
             results_and_distances.append(
@@ -86,8 +89,12 @@ QUERY TO ANSWER:
             else AIMessage(content=message.content)
             for message in messages[:-1]
         ]
-        parsed_messages.insert(0, HumanMessage(content=prompt))
-        parsed_messages.append(SystemMessage(content=self.system_prompt))
+
+        parsed_messages.append(HumanMessage(content=prompt))
+        [print(message.content) for message in parsed_messages]
+        # Truncate the messages
+        if len(parsed_messages) > 5:
+            parsed_messages = parsed_messages[-5:]
         # Generate the response
         generated_response = self.llm(
             messages=parsed_messages,
@@ -120,7 +127,7 @@ QUERY TO ANSWER:
     def create_embeddings(self, text):
         return self.embeddings_engine.embed_query(text)
 
-    async def get_most_relevant_context(self, text: str):
+    async def get_most_relevant_context(self, text: str, echo_id: UUID = None):
         """
         Get the most relevant context for a given set of text
         """
@@ -128,7 +135,8 @@ QUERY TO ANSWER:
 
         vectorized_message = self.create_embeddings(text)
 
-        results = await self.explained_image_dao.similarity_search(vectorized_message)
+        results = await self.explained_image_dao.similarity_search(
+            vectorized_message, echo_id=echo_id)
         result_images = [
             ExplainedImageDTO(
                 title=result.title,
