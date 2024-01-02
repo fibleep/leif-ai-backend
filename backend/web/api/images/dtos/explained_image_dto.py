@@ -1,13 +1,14 @@
 from typing import List
 
 from pydantic import BaseModel
+from sqlalchemy import UUID
 
 from backend.db.models.explained_image_model import ExplainedImageModel
 
 
 class UpdateExplainedImageDTO(BaseModel):
     """ExplainedImage model"""
-    id: int
+    id: UUID
     image: str
     title: str
     date: str

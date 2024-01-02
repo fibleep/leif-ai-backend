@@ -1,15 +1,15 @@
-from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import Integer, String, Float, ForeignKey, Column
 from sqlalchemy.orm import mapped_column, relationship, Mapped
-
+from sqlalchemy.dialects.postgresql import UUID
 from backend.db.base import Base
 
 
 class ExplainedImageModel(Base):
     __tablename__ = "explained_images"
-    id = mapped_column(Integer(), primary_key=True)
+    id = mapped_column(UUID(), primary_key=True, default=uuid.uuid4)
     image = mapped_column(String(), nullable=False)
     title = mapped_column(String())
     date = mapped_column(String())

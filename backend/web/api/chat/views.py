@@ -12,7 +12,7 @@ router = APIRouter()
 @router.post("/")
 async def chat(
     conversation: Conversation,
-    organization_id: int = 1,
+    echo_id: str = None,
     explained_image_dao: ExplainedImageDAO = Depends(),
 ):
     """
