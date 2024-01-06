@@ -23,7 +23,7 @@ async def chat(
     """
     llm_engine = LangchainEngine("gpt-3.5-turbo", explained_image_dao)
     generation = await llm_engine.generate(conversation.messages, echo_id)
-    results = generation[1]
+    results = generation[1] if len(generation) > 1 else []
     bot_response = BotResponse(
         generation[0],
         results

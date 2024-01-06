@@ -8,7 +8,7 @@ class BotResponse:
     Bot response model
     """
     comment: str
-    destinations: List[ExplainedImageDTO]
+    destinations: List[ExplainedImageDTO] = []
 
     def __init__(self, comment: str, destinations: List[ExplainedImageDTO]):
         self.comment = comment
