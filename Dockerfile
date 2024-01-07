@@ -26,8 +26,8 @@ RUN apt-get clean \
 
 EXPOSE 8000
 # Create a .env
-RUN touch .env \
-    && echo "BACKEND_RELOAD=True" >> .env \
+CMD ["touch", ".env"]
+RUN echo "BACKEND_RELOAD=True" >> .env \
     && echo "BACKEND_DB_HOST=$BACKEND_DB_HOST" >> .env \
     && echo "BACKEND_SUPABASE_SERVICE_ROLE=$BACKEND_SUPABASE_SERVICE_ROLE" >> .env \
     && echo "BACKEND_SUPABASE_PUBLIC_API=$BACKEND_SUPABASE_PUBLIC_API" >> .env \
