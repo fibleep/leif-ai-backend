@@ -1,8 +1,10 @@
-FROM python:3.11.4-slim-bullseye as prod
+FROM python:3.11.4-slim-bullseye
 RUN apt-get update && apt-get install -y \
-  gcc \
-  && rm -rf /var/lib/apt/lists/*
+  gcc
 
+RUN apt-get install ffmpeg libsm6 libxext6  -y
+
+RUN rm -rf /var/lib/apt/lists/*
 
 RUN pip install poetry==1.4.2
 
@@ -10,8 +12,7 @@ RUN pip install poetry==1.4.2
 RUN poetry config virtualenvs.create false
 
 # Copying requirements of a project
-COPY pyproject.toml poetry.lock /app/src/
-WORKDIR /app/src
+COPY . .
 
 # Installing requirements
 RUN poetry install --only main
@@ -20,12 +21,7 @@ RUN apt-get purge -y \
   gcc \
   && rm -rf /var/lib/apt/lists/*
 
-# Copying actuall application
-COPY . /app/src/
-RUN poetry install --only main
 
-CMD ["/usr/local/bin/python", "-m", "backend"]
-
-FROM prod as dev
-
-RUN poetry install
+EXPOSE 8000
+CMD ["ls", "-la"]
+CMD ["poetry", "run", "python", "-m", "backend"]
