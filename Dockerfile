@@ -25,18 +25,18 @@ RUN apt-get clean \
     && rm -rf /root/.cache
 
 EXPOSE 8000
-
-# Set environment variables
-ENV BACKEND_RELOAD=True \
-    BACKEND_DB_HOST=$backend-db-host \
-    BACKEND_SUPABASE_SERVICE_ROLE=$backend-sb-sr \
-    BACKEND_SUPABASE_PUBLIC_API=$backend-sb-api \
-    BACKEND_OPENAI_API_KEY=$backend-openai-key \
-    BACKEND_DB_PASSWORD=$backend-db-password \
-    BACKEND_SECRET_KEY=$backend-secret-key \
-    BACKEND_ALGORITHM=$backend-algorithm \
-    DB_URL=$db-url \
-    BACKEND_SUPABASE_URL=$backend-sb-url \
-    BACKEND_COHERE_API_KEY=$backend-cohere-key
+# Create a .env
+RUN touch .env \
+    && echo "BACKEND_RELOAD=True" >> .env \
+    && echo "BACKEND_DB_HOST=$backend-db-host" >> .env \
+    && echo "BACKEND_SUPABASE_SERVICE_ROLE=$backend-sb-sr" >> .env \
+    && echo "BACKEND_SUPABASE_PUBLIC_API=$backend-sb-api" >> .env \
+    && echo "BACKEND_OPENAI_API_KEY=$backend-openai-key" >> .env \
+    && echo "BACKEND_DB_PASSWORD=$backend-db-password" >> .env \
+    && echo "BACKEND_SECRET_KEY=$backend-secret-key" >> .env \
+    && echo "BACKEND_ALGORITHM=$backend-algorithm" >> .env \
+    && echo "DB_URL=$db-url" >> .env \
+    && echo "BACKEND_SUPABASE_URL=$backend-sb-url" >> .env \
+    && echo "BACKEND_COHERE_API_KEY=$backend-cohere-key" >> .env \
 
 CMD ["poetry", "run", "python", "-m", "backend"]
