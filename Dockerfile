@@ -20,8 +20,7 @@ COPY . .
 RUN poetry install --only main
 
 # Cleaning up unnecessary packages and clearing cache
-RUN apt-get purge -y gcc \
-    && apt-get clean \
+RUN  apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /root/.cache
 
