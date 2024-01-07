@@ -1,27 +1,30 @@
 FROM python:3.11.4-slim-bullseye
+
+# Update and install system dependencies
 RUN apt-get update && apt-get install -y \
-  gcc
+    gcc \
+    ffmpeg \
+    libsm6 \
+    libxext6
 
-RUN apt-get install ffmpeg libsm6 libxext6  -y
-
-RUN rm -rf /var/lib/apt/lists/*
-
-RUN pip install poetry==1.4.2
+# Install poetry
+RUN pip install poetry
 
 # Configuring poetry
 RUN poetry config virtualenvs.create false
 
-# Copying requirements of a project
+# Copying project files
 COPY . .
 
-# Installing requirements
+# Installing project dependencies
 RUN poetry install --only main
-# Removing gcc
-RUN apt-get purge -y \
-  gcc \
-  && rm -rf /var/lib/apt/lists/*
 
+# Cleaning up unnecessary packages and clearing cache
+RUN apt-get purge -y gcc \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /root/.cache
 
 EXPOSE 8000
-CMD ["ls", "-la"]
+
 CMD ["poetry", "run", "python", "-m", "backend"]
