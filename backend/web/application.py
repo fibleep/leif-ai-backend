@@ -47,4 +47,8 @@ def get_app() -> FastAPI:
     # Main router for the API.
     app.include_router(router=api_router, prefix="/api")
 
+    @app.get("/")
+    async def root():
+        return {"message": "Hello World"}
+
     return app

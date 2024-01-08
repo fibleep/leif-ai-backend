@@ -11,4 +11,4 @@ migrate:
 
 docker-up:
 	docker build -t echoes-backend .
-	docker run -p 8000 echoes-backend
+	docker run -p 8000:8000 echoes-backend
