@@ -24,8 +24,7 @@ RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /root/.cache
 
-
-EXPOSE 8000
+EXPOSE 80
 ## Create a .env
 #CMD ["touch", ".env"]
 #RUN echo "BACKEND_RELOAD=True" >> .env \
