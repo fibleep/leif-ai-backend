@@ -25,17 +25,5 @@ RUN apt-get clean \
     && rm -rf /root/.cache
 
 EXPOSE 80
-## Create a .env
-#CMD ["touch", ".env"]
-#RUN echo "BACKEND_RELOAD=True" >> .env \
-#    && echo "BACKEND_DB_HOST=$BACKEND_DB_HOST" >> .env \
-#    && echo "BACKEND_SUPABASE_SERVICE_ROLE=$BACKEND_SUPABASE_SERVICE_ROLE" >> .env \
-#    && echo "BACKEND_SUPABASE_PUBLIC_API=$BACKEND_SUPABASE_PUBLIC_API" >> .env \
-#    && echo "BACKEND_OPENAI_API_KEY=$BACKEND_OPENAI_API_KEY" >> .env \
-#    && echo "BACKEND_DB_PASSWORD=$BACKEND_DB_PASSWORD" >> .env \
-#    && echo "BACKEND_SECRET_KEY=$BACKEND_SECRET_KEY" >> .env \
-#    && echo "BACKEND_ALGORITHM=$BACKEND_ALGORITHM" >> .env \
-#    && echo "DB_URL=$DB_URL" >> .env \
-#    && echo "BACKEND_SUPABASE_URL=$BACKEND_SUPABASE_URL" >> .env \
-#    && echo "BACKEND_COHERE_API_KEY=$BACKEND_COHERE_API_KEY" >> .env \
+
 CMD ["poetry", "run", "python", "-m", "backend"]
