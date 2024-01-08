@@ -9,7 +9,6 @@ argon2-cffi-bindings==21.2.0
 asttokens==2.4.1
 asyncpg==0.28.0
 attrs==23.1.0
--e git+https://github.com/fibleep/leif-ai-backend.git@f1844ba67e6b9a2b371416d4ff60a0432a70a8d9#egg=backend
 backoff==2.2.1
 bcrypt==4.1.2
 certifi==2023.11.17
