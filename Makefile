@@ -3,7 +3,7 @@
 up:
 	poetry run python -m backend
 
-makemigrations:
+make-migrations:
 	poetry run python -m alembic revision -m "$(message)"
 
 migrate:
