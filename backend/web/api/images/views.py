@@ -53,7 +53,7 @@ async def get_by_id(image_id: UUID, explained_image_dao: ExplainedImageDAO = Dep
 
 @router.delete("/{id}")
 async def delete_by_id(id: UUID, explained_image_dao: ExplainedImageDAO = Depends(), ):
-    await explained_image_dao.delete_explained_image_b_id(id)
+    await explained_image_dao.delete_explained_image_by_id(id)
     return Response(status_code=200)
 
 

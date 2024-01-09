@@ -12,3 +12,7 @@ migrate:
 docker-up:
 	docker build -t echoes-backend .
 	docker run -p 80:8000 -it echoes-backend
+
+deploy:
+	sudo docker buildx build --platform linux/amd64 -t echoes .
+	fly deploy

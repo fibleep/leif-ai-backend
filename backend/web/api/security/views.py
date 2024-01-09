@@ -101,3 +101,12 @@ async def get_all_users(token: str = Depends(oauth2_scheme), user_dao: UserDAO =
     except:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Invalid email or password")
+
+@router.post("/jwt/create")
+async def refresh_token(token: str = Depends(oauth2_scheme), user_dao: UserDAO = Depends()):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return sign_jwt(payload)
+    except:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Invalid email or password")

@@ -16,4 +16,4 @@ class EchoModel(Base):
     id = Column(UUID(), primary_key=True, default=uuid.uuid4)
     name = Column(String)
 
-    explained_images: Mapped[List["ExplainedImageModel"]] = relationship()
+    explained_images: Mapped[List["ExplainedImageModel"]] = relationship(lazy='select')

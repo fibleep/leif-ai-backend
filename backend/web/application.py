@@ -18,7 +18,6 @@ def get_app() -> FastAPI:
     """
     app = FastAPI(
         title="backend",
-        version=metadata.version("backend"),
         docs_url="/api/docs",
         redoc_url="/api/redoc",
         openapi_url="/api/openapi.json",
@@ -30,6 +29,7 @@ def get_app() -> FastAPI:
         "http://localhost",
         "http://localhost:8080",
         "http://localhost:3000",
+        "*"
     ]
 
     app.add_middleware(
