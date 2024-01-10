@@ -1,7 +1,9 @@
+import json
 from uuid import UUID
 
 from fastapi import APIRouter
 from fastapi.param_functions import Depends
+from starlette.responses import StreamingResponse
 
 from backend.core.assistant.llm_engine.gpt_engine import GPTEngine
 from backend.core.assistant.llm_engine.langchain_engine import LangchainEngine
@@ -21,11 +23,17 @@ async def chat(
     """
     Chat with your location.
     """
-    llm_engine = LangchainEngine("gpt-4-1106-preview", explained_image_dao)
+    model = "gpt-4-1106-preview"
+    llm_engine = LangchainEngine(model, explained_image_dao)
     generation = await llm_engine.generate(conversation.messages, echo_id)
     results = generation[1] if len(generation) > 1 else []
-    bot_response = BotResponse(
-        generation[0],
-        results
-    )
-    return bot_response
+    results = [(results[0].json(), results[1]) for results in results]
+    async def combined_stream():
+        async for part in llm_engine.generate_stream(generation[0]):
+            yield part
+        # Encode and yield the additional data
+        yield "\n --- END --- \n"
+        yield json.dumps({"results": results}).encode()
+
+
+    return StreamingResponse(combined_stream(), media_type="text/event-stream")

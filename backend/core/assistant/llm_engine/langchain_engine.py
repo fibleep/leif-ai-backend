@@ -1,5 +1,8 @@
+import asyncio
 import logging
 import os
+from typing import AsyncIterable
+
 from math import asin, cos, sin, sqrt
 
 from dotenv import load_dotenv
@@ -19,6 +22,7 @@ from langchain.agents import AgentType, Tool, initialize_agent
 from langchain.llms import OpenAI
 from langchain.retrievers.document_compressors import CohereRerank
 from .llm_engine import LLMEngine
+from langchain.callbacks import AsyncIteratorCallbackHandler
 import cohere
 import re
 
@@ -30,6 +34,8 @@ class LangchainEngine(LLMEngine):
         self.model_name = model_name
         api_key = os.environ["BACKEND_OPENAI_API_KEY"]
         self.llm = ChatOpenAI(api_key=api_key, temperature=0.4, model=model_name)
+        self.streaming_llm = ChatOpenAI(api_key=api_key, temperature=0.4,
+                                        model=model_name, streaming=True)
         self.embeddings_engine = OpenAIEmbeddings(openai_api_key=api_key)
         self.system_prompt_with_context = """
 You are Echo, you are an expert at navigating through different places. You will be
@@ -81,12 +87,9 @@ Encourage the user to talk about a place, try your best to answer their question
                     }
                 }
             }
-            llm = ChatOpenAI(api_key=os.environ["BACKEND_OPENAI_API_KEY"],
-                             temperature=0,
-                             model_name="gpt-3.5-turbo")
             extraction_chain = create_extraction_chain(
                 schema=schema,
-                llm=llm
+                llm=self.llm
             )
             decision_message = (f"""
 Return True if the below mentions a location/place, False otherwise
@@ -102,7 +105,6 @@ USER QUERY:
 {current_message.content}
 """)
             included_context = extraction_chain.run(decision_message)[0]
-            print(included_context)
         except Exception as e:
             logging.error(e)
             included_context = False
@@ -142,13 +144,15 @@ QUERY TO ANSWER:
         # Truncate the messages
         if len(parsed_messages) > 5:
             parsed_messages = parsed_messages[-5:]
-        # Generate the response
-        generated_response = self.llm(
-            messages=parsed_messages,
-            temperature=0.7,
-            stream=False,
-        )
-        return generated_response, chosen_context
+        return parsed_messages, chosen_context
+
+    async def generate_stream(self, messages) -> AsyncIterable[str]:
+        """
+        Generate a stream of messages
+        """
+        async for message in self.streaming_llm.astream(messages):
+            yield str(message.content)
+
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
         """
@@ -243,7 +247,6 @@ QUERY TO ANSWER:
                                  documents=parsed_documents, top_n=2,
                                  model="rerank-multilingual-v2.0"
                                  )
-        print(results)
         pattern = r"INDEX\[(\d+)\]"
         sorted_results = [re.findall(pattern, str(result))[0] for result in
                           results.results]
