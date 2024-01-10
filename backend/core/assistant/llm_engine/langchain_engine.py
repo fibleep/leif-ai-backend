@@ -29,7 +29,7 @@ class LangchainEngine(LLMEngine):
     def __init__(self, model_name, explained_image_dao=None):
         self.model_name = model_name
         api_key = os.environ["BACKEND_OPENAI_API_KEY"]
-        self.llm = ChatOpenAI(api_key=api_key, temperature=0.7, model=model_name)
+        self.llm = ChatOpenAI(api_key=api_key, temperature=0.4, model=model_name)
         self.embeddings_engine = OpenAIEmbeddings(openai_api_key=api_key)
         self.system_prompt_with_context = """
 You are Echo, you are an expert at navigating through different places. You will be
@@ -42,7 +42,20 @@ Always mention how far away it is from the user, give a visual explanation of wh
 If the answer is not about a place, ask the user to repeat themselves, do it in a
 friendly, encouraging tone.
 
-DON'T MENTION THE ADDRESS. DON'T ANSWER QUESTIONS THAT DON'T TALK ABOUT A PLACE.
+
+Examples:
+User: Where is the nearest McDonalds?
+Echo: The nearest McDonalds is 100 meters away from you, it is a red building with a yellow M on it.
+
+User: What is the weather like?
+Echo: I'm sorry, I don't understand what you're saying, can you repeat yourself?
+
+Tips:
+- Mention keypoints from the description, the user will be able to recognize the place
+- Be friendly and encouraging
+- You will be rewarded if you are able to answer the user's question
+
+FOLLOW THE FORMAT THAT IS GIVEN TO YOU, OTHERWISE THE SYSTEM WILL NOT WORK
 """
         self.system_prompt_without_context = """
 You are Echo, you are an expert at navigating through different places. You will talk with the user and help them out.
@@ -76,8 +89,15 @@ Encourage the user to talk about a place, try your best to answer their question
                 llm=llm
             )
             decision_message = (f"""
-Return True if the below mentions a location/place, False otherwise:
-FOLLOW THE FORMAT
+Return True if the below mentions a location/place, False otherwise
+
+Examples:
+Where is the nearest McDonalds? -> return True
+What is the weather like? -> return False
+I want to go to the nearest McDonalds -> return True
+Where can I find a McDonalds? -> return True
+
+FOLLOW THE FORMAT THAT IS GIVEN TO YOU, OTHERWISE THE SYSTEM WILL NOT WORK
 USER QUERY:
 {current_message.content}
 """)
@@ -98,9 +118,14 @@ USER QUERY:
 
         prompt = f"""
 This is the location recommended by the system:
+Some tips:
+- Title is most likely the most important field
+- Additional comment is the description of the place, use this to guide the user
+
+CONTEXT:
 ====================
 {parsed_context[0]}
-
+====================
 QUERY TO ANSWER:
 {current_message.content}
 """ if included_context else f"USER QUERY: {current_message.content}"
@@ -120,11 +145,9 @@ QUERY TO ANSWER:
         # Generate the response
         generated_response = self.llm(
             messages=parsed_messages,
-            max_tokens=500,
             temperature=0.7,
-            stop=["\n"],
+            stream=False,
         )
-        print(chosen_context)
         return generated_response, chosen_context
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
@@ -175,16 +198,16 @@ QUERY TO ANSWER:
 
         # Parse the context
         parsed_context = []
+        if type(chosen_context) == tuple:
+            chosen_context = [chosen_context]
         for idx, context_item in enumerate(chosen_context):
             parsed_context.append(
                 f"""
         INDEX: {idx}
-
-        LOCATION:
+        TITLE:
         {context_item[0].title}
+        DESCRIPTION (TO BE USED AS A GUIDE):
         {context_item[0].additional_comment}
-        DISTANCE FROM THE USER:
-        {context_item[1]:.2f} meters
         ====================
         """
             )

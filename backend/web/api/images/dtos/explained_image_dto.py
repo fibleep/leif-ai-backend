@@ -8,7 +8,7 @@ from backend.db.models.explained_image_model import ExplainedImageModel
 
 class UpdateExplainedImageDTO(BaseModel):
     """ExplainedImage model"""
-    id: UUID
+    id: str
     image: str
     title: str
     date: str
