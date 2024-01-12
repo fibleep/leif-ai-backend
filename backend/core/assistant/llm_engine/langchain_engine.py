@@ -65,7 +65,9 @@ FOLLOW THE FORMAT THAT IS GIVEN TO YOU, OTHERWISE THE SYSTEM WILL NOT WORK
 """
         self.system_prompt_without_context = """
 You are Echo, you are an expert at navigating through different places. You will talk with the user and help them out.
-Encourage the user to talk about a place, try your best to answer their questions. If they start asking you about something that is not related to a place, say that you're unable to answer that question.
+If you see this, that means that the system didn't find any locations for the
+user. Tell the user that you couldn't find anything and let them know that this was
+outside your scope.
 """
         self.explained_image_dao = explained_image_dao
         self.co = cohere.Client(os.environ["BACKEND_COHERE_API_KEY"])
@@ -73,50 +75,12 @@ Encourage the user to talk about a place, try your best to answer their question
     async def generate(self, messages, echo_id: UUID = None):
 
         current_message = messages[-1]
-        # Find which "place" the user is talking about
-        # Extracting the last three user messages
-        user_messages = [msg for msg in messages[-3:] if msg.role == "user"]
-        combined_user_messages = " | ".join(msg.content for msg in user_messages)
 
         # Do we need to include the context?
-        try:
-            schema = {
-                "properties": {
-                    "is_about_location": {
-                        "type": "boolean",
-                    }
-                }
-            }
-            extraction_chain = create_extraction_chain(
-                schema=schema,
-                llm=self.llm
-            )
-            decision_message = (f"""
-Return True if the below mentions a location/place, False otherwise
 
-Examples:
-Where is the nearest McDonalds? -> return True
-What is the weather like? -> return False
-I want to go to the nearest McDonalds -> return True
-Where can I find a McDonalds? -> return True
-
-FOLLOW THE FORMAT THAT IS GIVEN TO YOU, OTHERWISE THE SYSTEM WILL NOT WORK
-USER QUERY:
-{current_message.content}
-""")
-            included_context = extraction_chain.run(decision_message)[0]
-        except Exception as e:
-            logging.error(e)
-            included_context = False
-        # Send the combined messages to the similarity search function
-        if included_context:
-            parsed_context, chosen_context = await self._get_parsed_context(
-                current_message,
-                combined_user_messages,
-                echo_id)
-        else:
-            parsed_context = []
-            chosen_context = []
+        parsed_context, chosen_context = await self._get_parsed_context(
+            current_message,
+            echo_id)
 
         prompt = f"""
 This is the location recommended by the system:
@@ -128,9 +92,22 @@ CONTEXT:
 ====================
 {parsed_context[0]}
 ====================
-QUERY TO ANSWER:
+USER QUERY TO ANSWER:
 {current_message.content}
-""" if included_context else f"USER QUERY: {current_message.content}"
+"""
+        try:
+            to_evaluate = (f"""USER QUERY: {current_message.content}
+CONTEXT:
+{chosen_context[0][0].title}
+{chosen_context[0][0].additional_comment}""")
+            included_context = self._decide_include_context(to_evaluate)
+        except Exception as e:
+            logging.error(e)
+            print(e)
+            included_context = False
+        print(included_context)
+        prompt = prompt if included_context else f"USER QUERY: {current_message.content}"
+
         parsed_messages = [
             HumanMessage(content=message.content)
             if message.role == "user"
@@ -144,7 +121,7 @@ QUERY TO ANSWER:
         # Truncate the messages
         if len(parsed_messages) > 5:
             parsed_messages = parsed_messages[-5:]
-        return parsed_messages, chosen_context
+        return parsed_messages, chosen_context if included_context else []
 
     async def generate_stream(self, messages) -> AsyncIterable[str]:
         """
@@ -152,6 +129,45 @@ QUERY TO ANSWER:
         """
         async for message in self.streaming_llm.astream(messages):
             yield str(message.content)
+
+    def _decide_include_context(self, to_evaluate):
+        schema = {
+            "properties": {
+                "context_is_useful": {
+                    "type": "boolean",
+                }
+            }
+        }
+        extraction_chain = create_extraction_chain(
+            schema=schema,
+            llm=self.llm
+        )
+        decision_message = (f"""
+        # CONTEXT #
+        You are going to make a decision about whether or not to include the context
+        about the location.
+
+        # OBJECTIVE #
+        Guide the user to their destination or answer their question. Be as accurate as possible.
+        If the context doesn't match the user query, don't include it. - return False
+
+        # STYLE #
+        Follow the format that is given to you, otherwise the system will not work.
+
+        # RESPONSE #
+        Return True if the returned context matches the user query or if its useful,
+        otherwise return False. REMEMBER! This will have huge impact on the user experience.
+
+        # EXAMPLE #
+        USER QUERY: Where is the nearest McDonalds?
+        CONTEXT:"talks about McDonalds"
+        RESPONSE: True
+
+        # QUERY + RETRIEVED CONTEXT TO EVALUATE #
+        {to_evaluate}
+        """)
+        included_context = extraction_chain.run(decision_message)[0]
+        return included_context['context_is_useful']
 
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
@@ -176,7 +192,7 @@ QUERY TO ANSWER:
     def create_embeddings(self, text):
         return self.embeddings_engine.embed_query(text)
 
-    async def _get_parsed_context(self, current_message, combined_user_messages,
+    async def _get_parsed_context(self, current_message,
                                   echo_id:
                                   UUID =
                                   None):
@@ -187,7 +203,7 @@ QUERY TO ANSWER:
         :param echo_id: echo id
         :return: parsed_context and chosen_context
         """
-        results = await self.get_most_relevant_context(combined_user_messages, echo_id)
+        results = await self.get_most_relevant_context(current_message.content, echo_id)
         results_and_distances = []
         for result in results:
             results_and_distances.append(
@@ -196,7 +212,7 @@ QUERY TO ANSWER:
 
         # Find the most relevant context
         chosen_context = await self._find_relevant_context(
-            combined_user_messages=combined_user_messages,
+            combined_user_messages=current_message.content,
             possible_locations=results_and_distances,
         )
 
@@ -210,6 +226,8 @@ QUERY TO ANSWER:
         INDEX: {idx}
         TITLE:
         {context_item[0].title}
+        DISTANCE:
+        {context_item[1]} meters away from User
         DESCRIPTION (TO BE USED AS A GUIDE):
         {context_item[0].additional_comment}
         ====================
